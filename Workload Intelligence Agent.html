@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workload Intelligence Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f3;--card:#fff;--ink:#12202b;--mute:#5b6b78;--line:#dbe2e7;--teal:#0e7c76;--amber:#b87a00;--red:#c2410c;--soft:#e4f1f0;--rgb:194,65,12;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1519;--card:#142027;--ink:#e6edf1;--mute:#93a4af;--line:#243540;--teal:#3ec1b8;--amber:#e0aa3a;--red:#f2845a;--soft:#12302f;--rgb:242,132,90}}
+:root[data-theme="dark"]{--bg:#0d1519;--card:#142027;--ink:#e6edf1;--mute:#93a4af;--line:#243540;--teal:#3ec1b8;--amber:#e0aa3a;--red:#f2845a;--soft:#12302f;--rgb:242,132,90}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Manrope,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+h1{font:600 28px/1.15 Fraunces,Georgia,serif;margin:0}
+.sub{color:var(--mute);margin:4px 0 0}
+select,input[type=text]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.kpi b{display:block;font:600 26px/1.2 Fraunces,serif}
+.kpi span{color:var(--mute);font-size:12px}.kpi i{font-style:normal;font-weight:700;font-size:12px}
+.bad{color:var(--red)}.good{color:var(--teal)}
+.row2{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.row3{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+@media(max-width:860px){.row2,.row3{grid-template-columns:minmax(0,1fr)}}
+h2{font-size:15px;margin:0 0 2px}.hint{color:var(--mute);font-size:12px;margin:0 0 10px}
+.hero h2{font:600 20px/1.3 Fraunces,serif}
+svg{width:100%;height:auto;display:block}
+.read{min-height:20px;font-size:12px;color:var(--mute)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+th{text-align:left;font-weight:700;color:var(--mute);font-size:12px;padding:6px 8px}
+td{padding:7px 8px;border-top:1px solid var(--line)}
+tr.r{cursor:pointer}tr.r:hover td{background:var(--soft)}tr.on td{background:var(--soft);font-weight:700}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:70px}.bar u{display:block;height:100%;background:var(--red)}
+.chat{display:flex;flex-direction:column;height:430px}
+.msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px}
+.m{max-width:92%;padding:8px 11px;border-radius:10px;white-space:pre-wrap}
+.m.a{background:var(--soft);align-self:flex-start}.m.u{background:var(--teal);color:#fff;align-self:flex-end}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:4px 10px;font-size:12px}
+.chip:hover{border-color:var(--teal);color:var(--teal)}
+.send{display:flex;gap:6px}.send input{flex:1;min-width:0}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.sl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-bottom:10px;font-size:13px}.sl input{grid-column:1/3;width:100%;accent-color:var(--teal)}
+.cmp{display:grid;gap:8px;margin-top:8px}.cmp div{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;font-size:12px}
+.cmp .bar{height:10px}.cmp .bar u{background:var(--teal)}.cmp .bar u.b{background:var(--mute);opacity:.5;height:50%}
+.pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+@media(max-width:600px){.pipe{grid-template-columns:1fr 1fr}}
+.ag{border:1px solid var(--line);border-radius:10px;padding:8px;font-size:12px;transition:.3s}
+.ag b{display:block;font-size:13px}.ag.run{border-color:var(--amber);background:rgba(184,122,0,.1)}.ag.done{border-color:var(--teal);background:var(--soft)}
+.log{font:12px/1.6 ui-monospace,Menlo,monospace;color:var(--mute);min-height:60px;max-height:120px;overflow:auto}
+.rec{border-top:1px solid var(--line);padding:10px 0;display:grid;grid-template-columns:1fr auto;gap:4px 10px}
+.rec p{margin:0;color:var(--mute);font-size:12px}.rec .acts{display:flex;gap:6px;align-items:center}
+.tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:rgba(var(--rgb),.14);color:var(--red)}
+.st{font-size:12px;font-weight:700}.st.ok{color:var(--teal)}
+.foot{color:var(--mute);font-size:12px;margin-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header>
+ <div><h1>Workload Intelligence Agent</h1>
+ <p class="sub">Simulated data · 6 departments · 12 months (Nov 2025 – Oct 2026) · 473 employees</p></div>
+ <label>Scope <select id="dept" aria-label="Department"></select></label>
+</header>
+<section class="grid kpis" id="kpis"></section>
+<section class="grid row2">
+ <div class="card hero"><h2 id="headline"></h2><p class="hint">Bars show weekly hours (left axis). The line shows tasks completed per 40 hours worked (right axis). Hover a month for detail.</p><div id="chart"></div><div class="read" id="read"></div></div>
+ <div class="card chat"><h2>Ask the agent</h2><p class="hint">Answers come from the data in this dashboard.</p>
+  <div class="msgs" id="msgs" aria-live="polite"></div>
+  <div class="chips" id="chips"></div>
+  <form class="send" id="f"><input type="text" id="q" placeholder="Ask about bottlenecks, causes, fixes…" aria-label="Question"><button class="btn">Ask</button></form></div>
+</section>
+<section class="grid row3" style="margin-top:14px">
+ <div class="card"><h2>Bottleneck risk by department</h2><p class="hint">Latest month. Risk blends overtime, absence, engagement and task completion. Select a row to focus.</p><div class="scroll"><table id="tbl"></table></div></div>
+ <div class="card"><h2>What-if simulator</h2><p class="hint" id="simfor"></p>
+  <div class="sl"><label for="s1">Cut overtime</label><b id="v1">0%</b><input type="range" id="s1" min="0" max="100" value="0"></div>
+  <div class="sl"><label for="s2">Add headcount</label><b id="v2">0%</b><input type="range" id="s2" min="0" max="15" value="0"></div>
+  <div class="sl"><label for="s3">Automate routine tasks</label><b id="v3">0%</b><input type="range" id="s3" min="0" max="30" value="0"></div>
+  <div class="cmp" id="cmp"></div></div>
+</section>
+<section class="card" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><h2>Agent workflow and human approval</h2><p class="hint" style="margin:0">Four cooperating agents analyse the data. Nothing is applied until a manager approves it.</p></div><button class="btn" id="run">Run analysis</button></div>
+ <div class="pipe" id="pipe"></div><div class="log" id="log">Waiting to run.</div><div id="recs"></div></section>
+<p class="foot">All figures are assumed sample data created for this case study. Replace the generator with HRIS, timesheet and project-tool exports to use real data.</p>
+</div>
+<script>
+const M=['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+// name, ot0, otSlope, abs0, absSlope, comp0, compSlope, eng0, engSlope, headcount
+const P=[['Engineering',3,.55,3,.12,92,-.7,76,-.9,120],['Customer Support',4,.6,4.5,.25,90,-1.1,68,-1.4,85],['Sales',3,.35,3.5,.1,88,-.4,72,-.5,64],['Operations',4,.7,4,.28,91,-1.3,70,-1.2,140],['Finance',2,.4,2.5,.08,95,-.5,78,-.6,38],['HR & Admin',2,.1,2.8,.05,94,-.1,80,-.2,26]];
+let seed=7;const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296-.5};
+const mk=(r,i)=>{const ot=Math.max(0,r[1]+r[2]*i+rnd()*.8),hrs=40+ot,comp=r[5]+r[6]*i+rnd()*1.2;return{ot,hrs,abs:Math.max(1,r[3]+r[4]*i+rnd()*.3),comp,eng:r[7]+r[8]*i+rnd()*1.5,prod:comp*40/hrs}};
+const DATA=P.map(r=>({n:r[0],hc:r[9],s:M.map((_,i)=>mk(r,i))}));
+const risk=x=>Math.min(100,x.ot*4+x.abs*3+(100-x.eng)*.5+(100-x.comp)*1.2);
+const K=['hrs','ot','abs','comp','eng','prod'];
+const TOT=DATA.reduce((a,d)=>a+d.hc,0);
+function ser(n){if(n!=='All')return DATA.find(d=>d.n===n).s;return M.map((_,i)=>{const o={};K.forEach(k=>o[k]=DATA.reduce((a,d)=>a+d.s[i][k]*d.hc,0)/TOT);return o})}
+const $=id=>document.getElementById(id),f1=v=>v.toFixed(1);
+let sel='All';
+const sd=$('dept');['All',...DATA.map(d=>d.n)].forEach(n=>sd.add(new Option(n==='All'?'All departments':n,n)));
+sd.onchange=()=>{sel=sd.value;draw()};
+function kpis(){const s=ser(sel),a=s[0],b=s[11];
+ const def=[['Weekly hours','hrs',1,'h',1],['Overtime / week','ot',1,'h',1],['Absenteeism','abs',1,'%',1],['Engagement','eng',0,'',0],['Task completion','comp',0,'%',0],['Productivity index','prod',0,'',0]];
+ $('kpis').innerHTML=def.map(([l,k,up,u,badUp])=>{const d=b[k]-a[k],worse=badUp?d>0:d<0;return`<div class="card kpi"><span>${l}</span><b>${f1(b[k])}${u}</b><i class="${worse?'bad':'good'}">${d>0?'▲':'▼'} ${f1(Math.abs(d))}${u} since Nov</i></div>`}).join('')}
+function corr(){const x=[],y=[];DATA.forEach(d=>d.s.forEach(m=>{x.push(m.hrs);y.push(m.prod)}));const mx=x.reduce((a,b)=>a+b)/x.length,my=y.reduce((a,b)=>a+b)/y.length;let n=0,dx=0,dy=0;x.forEach((v,i)=>{n+=(v-mx)*(y[i]-my);dx+=(v-mx)**2;dy+=(y[i]-my)**2});return n/Math.sqrt(dx*dy)}
+function chart(){const s=ser(sel),W=640,H=270,p={l:38,r:40,t:14,b:26},h=s.map(x=>x.hrs),q=s.map(x=>x.prod);
+ const h0=36,h1=Math.max(...h)+2,q0=Math.min(...q)-8,q1=Math.max(...q)+4,iw=W-p.l-p.r,ih=H-p.t-p.b;
+ const X=i=>p.l+iw*(i+.5)/12,Yh=v=>p.t+ih-(v-h0)/(h1-h0)*ih,Yq=v=>p.t+ih-(v-q0)/(q1-q0)*ih;
+ let g='';for(let t=0;t<=4;t++){const y=p.t+ih*t/4;g+=`<line x1="${p.l}" x2="${W-p.r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${p.l-6}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--mute)">${Math.round(h1-(h1-h0)*t/4)}</text><text x="${W-p.r+6}" y="${y+4}" font-size="10" fill="var(--red)">${Math.round(q1-(q1-q0)*t/4)}</text>`}
+ g+=s.map((m,i)=>`<rect x="${X(i)-12}" y="${Yh(m.hrs)}" width="24" height="${p.t+ih-Yh(m.hrs)}" rx="3" fill="var(--teal)" opacity=".28"/><text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--mute)">${M[i]}</text>`).join('');
+ g+=`<polyline fill="none" stroke="var(--red)" stroke-width="2.5" points="${q.map((v,i)=>X(i)+','+Yq(v)).join(' ')}"/>`+q.map((v,i)=>`<circle cx="${X(i)}" cy="${Yq(v)}" r="3.5" fill="var(--red)"/>`).join('');
+ g+=s.map((m,i)=>`<rect data-i="${i}" x="${X(i)-iw/24}" y="${p.t}" width="${iw/12}" height="${ih}" fill="transparent" tabindex="0" aria-label="${M[i]}"/>`).join('');
+ $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Hours versus productivity">${g}</svg>`;
+ const sh=m=>$('read').textContent=`${M[m]}: ${f1(s[m].hrs)} h/week, productivity index ${f1(s[m].prod)}, engagement ${f1(s[m].eng)}, absence ${f1(s[m].abs)}%`;
+ $('chart').querySelectorAll('rect[data-i]').forEach(r=>{const i=+r.dataset.i;r.onmouseenter=r.onfocus=()=>sh(i)});sh(11);
+ const dh=(s[11].hrs/s[0].hrs-1)*100,dp=(s[11].prod/s[0].prod-1)*100;
+ $('headline').textContent=`${sel==='All'?'Company-wide':sel}: hours up ${f1(dh)}%, productivity down ${f1(Math.abs(dp))}% in 12 months (correlation across departments: ${corr().toFixed(2)})`}
+function table(){const rows=DATA.map(d=>({d,m:d.s[11],r:risk(d.s[11])})).sort((a,b)=>b.r-a.r);
+ const cell=(v,bad)=>`<td style="background:rgba(var(--rgb),${Math.max(0,Math.min(.4,bad)).toFixed(2)})">${v}</td>`;
+ $('tbl').innerHTML=`<tr><th>Department</th><th>Staff</th><th>Overtime h</th><th>Absence</th><th>Engage.</th><th>Complete</th><th>Risk</th></tr>`+rows.map(({d,m,r})=>`<tr class="r ${sel===d.n?'on':''}" data-n="${d.n}" tabindex="0"><td>${d.n}</td><td>${d.hc}</td>${cell(f1(m.ot),(m.ot-4)/16)}${cell(f1(m.abs)+'%',(m.abs-3.5)/8)}${cell(f1(m.eng),(75-m.eng)/40)}${cell(f1(m.comp)+'%',(92-m.comp)/40)}<td><div class="bar" title="${Math.round(r)}"><u style="width:${r}%"></u></div></td></tr>`).join('');
+ $('tbl').querySelectorAll('tr.r').forEach(t=>{const go=()=>{sel=t.dataset.n;sd.value=sel;draw()};t.onclick=go;t.onkeydown=e=>{if(e.key==='Enter')go()}})}
+function sim(){const a=+$('s1').value,b=+$('s2').value,c=+$('s3').value;$('v1').textContent=a+'%';$('v2').textContent=b+'%';$('v3').textContent=c+'%';
+ $('simfor').textContent=`Projected effect on ${sel==='All'?'all departments':sel}, latest month.`;
+ const m=ser(sel)[11],hrs=Math.max(38,m.hrs-(m.hrs-40)*a/100-m.hrs*b/100*.6-c*.15),comp=Math.min(97,m.comp+a*.12+b*.5+c*.35),eng=Math.min(95,m.eng+a*.18+b*.4+c*.2),ab=Math.max(1.5,m.abs-a*.04-c*.02-b*.05),prod=comp*40/hrs;
+ const R=(l,o,n,max,u)=>`<div><span>${l}</span><div class="bar"><u class="b" style="width:${o/max*100}%"></u><u style="width:${n/max*100}%;margin-top:-5px;height:100%"></u></div><b>${f1(n)}${u}</b></div>`;
+ $('cmp').innerHTML=R('Weekly hours',m.hrs,hrs,60,'h')+R('Productivity',m.prod,prod,100,'')+R('Engagement',m.eng,eng,100,'')+R('Absence',m.abs,ab,12,'%')+`<p class="hint">Grey = today. Teal = projected. The model uses simple assumed effects, not forecasts.</p>`}
+['s1','s2','s3'].forEach(i=>$(i).oninput=sim);
+// Agent
+const rk=()=>DATA.map(d=>({n:d.n,m:d.s[11],f:d.s[0],r:risk(d.s[11])})).sort((a,b)=>b.r-a.r);
+const driver=m=>{const c=[['overtime',m.ot*4],['absence',m.abs*3],['low engagement',(100-m.eng)*.5],['missed task completion',(100-m.comp)*1.2]].sort((a,b)=>b[1]-a[1]);return c[0][0]};
+const FIX={overtime:'Cap overtime at 4 h/week, rebalance shifts and add temporary cover.',absence:'Introduce flexible rostering and manager wellbeing check-ins.','low engagement':'Run stay interviews and reset workload targets with team leads.','missed task completion':'Re-prioritise the backlog and automate repetitive tasks.'};
+function answer(q){q=q.toLowerCase();const r=rk(),t=r[0];
+ if(/bottleneck|where|worst|risk|which/.test(q))return`Highest risk: ${r.slice(0,3).map(x=>`${x.n} (${Math.round(x.r)})`).join(', ')}.\n${t.n} is mainly driven by ${driver(t.m)}.`;
+ if(/why|cause|reason|paradox|decline/.test(q))return`Hours and productivity are strongly negatively correlated (r = ${corr().toFixed(2)}). Longer weeks bring more absence and lower engagement, so each extra hour yields less output. Largest drop: ${r.map(x=>[x.n,x.f.prod-x.m.prod]).sort((a,b)=>b[1]-a[1])[0].map((v,i)=>i?f1(v)+' index points':v).join(', ')}.`;
+ if(/overtime|hours/.test(q)){const o=[...r].sort((a,b)=>b.m.ot-a.m.ot)[0];return`${o.n} works the most overtime: ${f1(o.m.ot)} h/week, up from ${f1(o.f.ot)} in November.`}
+ if(/burnout|engage|absen/.test(q)){const o=[...r].sort((a,b)=>a.m.eng-b.m.eng)[0];return`${o.n} has the lowest engagement (${f1(o.m.eng)}) and ${f1(o.m.abs)}% absence. Treat it as a burnout watch area.`}
+ if(/recommend|fix|intervention|do|action|solve/.test(q))return r.slice(0,3).map((x,i)=>`${i+1}. ${x.n}: ${FIX[driver(x.m)]}`).join('\n')+'\nRun the analysis below to approve or defer these.';
+ if(/simulat|what if|impact|saving/.test(q))return'Use the simulator: cutting overtime by 50% in Operations lifts its productivity index by about 8 points in this model. Try the sliders.';
+ if(/summary|overview|status/.test(q)){const s=ser('All');return`Company-wide, weekly hours rose ${f1(s[11].hrs-s[0].hrs)} h while the productivity index fell ${f1(s[0].prod-s[11].prod)} points. Absence is ${f1(s[11].abs)}% and engagement ${f1(s[11].eng)}. ${t.n} is the main bottleneck.`}
+ return'I can cover bottlenecks, causes, overtime, burnout, recommendations or a summary. Try one of the suggestions.'}
+const add=(c,t)=>{const m=document.createElement('div');m.className='m '+c;m.textContent=t;$('msgs').append(m);$('msgs').scrollTop=1e9;return m};
+function ask(q){if(!q.trim())return;add('u',q);const w=add('a','Analysing…');setTimeout(()=>{w.textContent=answer(q);$('msgs').scrollTop=1e9},450)}
+$('f').onsubmit=e=>{e.preventDefault();ask($('q').value);$('q').value=''};
+['Give me a summary','Where are the bottlenecks?','Why is productivity falling?','Who is at burnout risk?','What should we do?'].forEach(t=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;b.onclick=()=>ask(t);$('chips').append(b)});
+add('a','Hello. I monitor workload, overtime, absence, task completion and engagement across six departments. What would you like to know?');
+// Pipeline
+const AG=[['Data agent','Cleans and joins HR, timesheet and task data'],['Diagnostic agent','Scores risk and finds root causes'],['Intervention agent','Drafts workload changes'],['Governance agent','Checks fairness and flags for human review']];
+$('pipe').innerHTML=AG.map(a=>`<div class="ag"><b>${a[0]}</b>${a[1]}</div>`).join('');
+let ap={};
+function recs(){const r=rk().slice(0,3);$('recs').innerHTML=r.map((x,i)=>{const dv=driver(x.m),est=(x.r*.11).toFixed(1);return`<div class="rec"><div><b>${x.n}</b> <span class="tag">risk ${Math.round(x.r)}</span><p>${FIX[dv]} Main driver: ${dv}. Estimated gain: +${est} productivity points.</p></div><div class="acts"><span class="st" id="st${i}">${ap[x.n]||'Awaiting review'}</span><button class="btn" data-a="${x.n}|${i}|Approved">Approve</button><button class="btn ghost" data-a="${x.n}|${i}|Deferred">Defer</button></div></div>`}).join('');
+ $('recs').querySelectorAll('button').forEach(b=>b.onclick=()=>{const[n,i,s]=b.dataset.a.split('|');ap[n]=s;const e=$('st'+i);e.textContent=s;e.className='st '+(s==='Approved'?'ok':'')})}
+$('run').onclick=()=>{const L=$('log'),A=[...document.querySelectorAll('.ag')];$('run').disabled=true;L.textContent='';$('recs').innerHTML='';ap={};A.forEach(a=>a.className='ag');
+ const r=rk(),lines=[['Loaded 72 department-months, 6 sources reconciled.'],[`Risk scores computed. ${r[0].n} leads at ${Math.round(r[0].r)}. Hours vs productivity r = ${corr().toFixed(2)}.`],[`${3} interventions drafted for ${r.slice(0,3).map(x=>x.n).join(', ')}.`],['Checked for equal treatment across teams. Awaiting human approval.']];
+ A.forEach((a,i)=>{setTimeout(()=>{if(i)A[i-1].className='ag done';a.className='ag run';L.textContent+=`[${AG[i][0]}] ${lines[i][0]}\n`;L.scrollTop=1e9;if(i===3)setTimeout(()=>{a.className='ag done';recs();$('run').disabled=false},700)},i*900)})};
+function draw(){kpis();chart();table();sim()}
+draw();
+</script></body></html>
